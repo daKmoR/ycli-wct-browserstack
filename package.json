@@ -1,0 +1,24 @@
+{
+  "name": "ycli-wct-browserstack",
+  "version": "0.0.1",
+  "description": "Plugin for ycli to easily run wct via browserstack",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daKmoR/ycli-wct-browserstack.git"
+  },
+  "keywords": [
+    "ycli",
+    "wct",
+    "browserstack"
+  ],
+  "author": "Thomas Allmer <d4kmor@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/daKmoR/ycli-wct-browserstack/issues"
+  },
+  "homepage": "https://github.com/daKmoR/ycli-wct-browserstack#readme"
+}
