@@ -87,8 +87,8 @@ if [[ ! -d "$webComponentTesterCustomRunnerPath" || ! -d "$wctBrowserstack" ]]; 
 fi
 
 if [[ -z ${ycliWctBrowserstackUsername} || -z ${ycliWctBrowserstackAccessKey} ]]; then
-	ycliGitLabApiToken=$(ycli config get wct.browserstack.username);
-	ycliGitLabApiUrl=$(ycli config get wct.browserstack.accessKey);
+	ycliWctBrowserstackUsername=$(ycli config get wct.browserstack.username);
+	ycliWctBrowserstackAccessKey=$(ycli config get wct.browserstack.accessKey);
 fi
 
 if [[ -z "$ycliWctBrowserstackUsername" || -z "$ycliWctBrowserstackAccessKey" || ${parameters[0]} == "login" ]]; then
