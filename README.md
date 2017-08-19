@@ -4,12 +4,16 @@ ycli wct browserstack
 Installation
 ------------
 
-```
-// make sure you have ycli installed
-npm install -g ycli
+This is a Plugin for [Ycli](https://github.com/daKmoR/ycli).
 
-// install
-npm install -g ycli-wct-browserstack
+Use ONE of the following methods:
+
+```
+# install via npm
+npm install --global ycli-wct-browserstack
+
+# install via git
+cd ~ && git clone git@github.com:daKmoR/ycli-wct-browserstack.git
 ```
 
 Usage

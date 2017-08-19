@@ -4,21 +4,32 @@
 # Bash Autocomplete
 #
 if [ "$1" == "ycliCommands" ]; then
-	ycliCommands="login list";
-	_ycliAddCommandsForPath "wct/browserstack";
-	echo $ycliCommands;
+	ycliCommands=("login list");
+	_ycliAddCommandsForPath "wct/browserstack-configs";
+	echo "${ycliCommands[@]}";
 	return;
 fi
 if [ "$2" == "ycliCommands" ]; then
 	return;
 fi
 
+if [[ -z ${ycliWctResultFilePath} ]]; then
+	ycliWctResultFilePath=$(ycli config get wct.resultFilePath);
+fi
+
 optionSave=0;
-optionSaveFilePath=".tmp/_lastBrowserStackTestResult.txt";
+optionSaveFilePath="$ycliWctResultFilePath";
+optionConfigFilePath="";
 parameters=($@);
 i=0;
 for parameter in ${parameters[@]}; do
 	((i++));
+	if [[ "$parameter" == "--config" || "$parameter" == "-c" ]]; then
+		n=$((i+1));
+		optionConfigFilePath=${!n};
+		unset parameters[$(( i - 1 ))];
+		unset parameters[$(( i ))];
+	fi
 	if [[ "$parameter" == "--save" || "$parameter" == "-s" ]]; then
 		optionSave=1;
 		unset parameters[$(( i - 1 ))];
@@ -36,6 +47,8 @@ for parameter in ${parameters[@]}; do
 		echo "This allows you to run the elements test via BrowserStack.";
 		echo "";
 		echo "Commands:";
+		echo "  config/configFile: "
+		echo "    Either a predefined config (see with <tab> <tab>) or a full path to a config "
 		echo "  login: "
 		echo "    Reenter your BrowserStack credential";
 		echo "  list: ";
@@ -51,6 +64,8 @@ for parameter in ${parameters[@]}; do
 		echo "Examples:";
 		echo "  browserstack chrome-latest-windows-10";
 		echo "    => run the tests only for latest chrome on windows 10";
+		echo "  browserstack ./other.wct.conf.js";
+		echo "    => run test using other.wct.conf.js";
 		echo "  browserstack --save";
 		echo "    => runs the test and saves the output to the file";
 		echo "  browserstack list > browsers.json";
@@ -71,26 +86,29 @@ if [[ ! -d "$webComponentTesterCustomRunnerPath" || ! -d "$wctBrowserstack" ]]; 
 	return 1;
 fi
 
-
-
-[ -s ~/.browserstackconfig ] && source ~/.browserstackconfig
-if [[ -z "$username" || -z "$accessKey" || ${parameters[0]} == "login" ]]; then
-	echo "Login to Browserstack:"
-	echo "You can find your login at https://www.browserstack.com/accounts/settings all the way at the bottom"
-	read -p 'Username: ' username
-	read -p 'Access Keys: ' accessKey
-	echo "username=$username" >> ~/.browserstackconfig
-	echo "accessKey=$accessKey" >> ~/.browserstackconfig
+if [[ -z ${ycliWctBrowserstackUsername} || -z ${ycliWctBrowserstackAccessKey} ]]; then
+	ycliGitLabApiToken=$(ycli config get wct.browserstack.username);
+	ycliGitLabApiUrl=$(ycli config get wct.browserstack.accessKey);
 fi
 
-if [[ -z "$username" || -z "$accessKey" ]]; then
-	echo "No Login No Usage";
-	return 1;
+if [[ -z "$ycliWctBrowserstackUsername" || -z "$ycliWctBrowserstackAccessKey" || ${parameters[0]} == "login" ]]; then
+	echo "Login to Browserstack:"
+	echo "You can find your login at https://www.browserstack.com/accounts/settings all the way at the bottom"
+	read -p 'Username: ' ycliWctBrowserstackUsername
+	read -p 'Access Key: ' ycliWctBrowserstackAccessKey
+
+	if [[ -z "$ycliWctBrowserstackUsername" || -z "$ycliWctBrowserstackAccessKey" ]]; then
+		echo "[ERROR] No Login No Usage";
+		return 1;
+	fi
+
+	ycli config set-global wct.browserstack.username "$ycliWctBrowserstackUsername"
+	ycli config set-global wct.browserstack.accessKey "$ycliWctBrowserstackAccessKey"
 fi
 
 # Setting it globally for the npm module
-export BROWSER_STACK_USERNAME=$username
-export BROWSER_STACK_ACCESS_KEY=$accessKey
+export BROWSER_STACK_USERNAME="$ycliWctBrowserstackUsername";
+export BROWSER_STACK_ACCESS_KEY="$ycliWctBrowserstackAccessKey";
 
 if ! nc -z browserstack.com 80 2>/dev/null; then
 	echo "[ERROR] browserstack.com is unreachable";
@@ -102,35 +120,35 @@ if [[ "${parameters[0]}" == "list" ]]; then
 	return;
 fi
 
-
 _ycliStartTime
 echo "[START] Test Browserstack";
 echo "";
 
 myDir=$(pwd)
 
-if [ -f "${parameters[0]}" ]; then
-	configFile="${parameters[0]}";
+config="${parameters[0]}";
+if [ -z "$config" ]; then
+	config="desktop-fast";
+fi
+
+if [ -f "$config" ]; then
+	configFile="$config";
 
 else
-	config="${parameters[0]}";
-	if [ -z "$config" ]; then
-		config="desktop-fast";
-	fi
-
-	configFile="$YCLI_DIR/scripts/test/browserstack/$config.js"
+	SOURCE_DIR=$(dirname "${BASH_SOURCE[0]}");
+	configFile="$SOURCE_DIR/browserstack-configs/$config.js"
 	if [ ! -f "$configFile" ]; then
 		echo "[ERROR] No Config file found at $configFile";
 		return 1;
 	fi
-fi
 
+fi
 
 if [[ $optionSave == 1 ]]; then
 	mkdir -p $(dirname  "$optionSaveFilePath")
-	wct --configFile $configFile --root $myDir > "$optionSaveFilePath"
+	wct --configFile "$configFile" --root "$myDir" | tee "$optionSaveFilePath"
 else
-	wct --configFile $configFile --root $myDir
+	wct --configFile "$configFile" --root "$myDir"
 fi
 
 _ycliEndTime
