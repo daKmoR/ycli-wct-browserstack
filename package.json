@@ -1,6 +1,6 @@
 {
   "name": "ycli-wct-browserstack",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Plugin for ycli to easily run wct via browserstack",
   "main": "index.js",
   "scripts": {
