@@ -110,7 +110,7 @@ fi
 export BROWSER_STACK_USERNAME="$ycliWctBrowserstackUsername";
 export BROWSER_STACK_ACCESS_KEY="$ycliWctBrowserstackAccessKey";
 
-if ! nc -z browserstack.com 80 2>/dev/null; then
+if ! ping -c 1 browserstack.com &> /dev/null; then
 	echo "[ERROR] browserstack.com is unreachable";
 	return;
 fi
