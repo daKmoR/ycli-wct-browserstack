@@ -135,8 +135,8 @@ if [ -f "$config" ]; then
 	configFile="$config";
 
 else
-	SOURCE_DIR=$(dirname "${BASH_SOURCE[0]}");
-	configFile="$SOURCE_DIR/browserstack-configs/$config.js"
+	configFile=$(_ycliGetPath "wct/browserstack-configs/$config.js");
+
 	if [ ! -f "$configFile" ]; then
 		echo "[ERROR] No Config file found at $configFile";
 		return 1;
